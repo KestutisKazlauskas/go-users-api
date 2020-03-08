@@ -3,13 +3,27 @@ package users
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 	"github.com/KestutisKazlauskas/go-users-api/domain/users"
 	"github.com/KestutisKazlauskas/go-users-api/services"
 	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
 )
 
 func GetUser(controller *gin.Context) {
-	controller.String(http.StatusNotImplemented, "Need some work!")
+	userId, userErr := strconv.ParseInt(controller.Param("user_id"), 10, 64)
+
+	if userErr != nil {
+		err := errors.NewBadRequestError("invalid user_id")
+		controller.JSON(err.Status, err)
+		return
+	}
+	user, getErr := services.GetUser(userId)
+	if getErr != nil {
+		controller.JSON(getErr.Status, getErr)
+		return 
+	}
+
+	controller.JSON(http.StatusOK, user)
 }
 
 func CreateUser(controller *gin.Context) {
