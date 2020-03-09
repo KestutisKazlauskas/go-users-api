@@ -3,6 +3,7 @@ package users
 
 import (
 	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
+	"github.com/KestutisKazlauskas/go-users-api/utils/date"
 	"fmt"
 )
 
@@ -21,6 +22,8 @@ func (user *User) Get() *errors.RestErr {
 	user.Id = result.Id
 	user.FirstName = result.FirstName
 	user.LastName = result.LastName
+	user.Email = result.Email
+	user.CreatedAt = result.CreatedAt
 
 	return nil
 }
@@ -30,6 +33,8 @@ func (user *User) Save() *errors.RestErr {
 	if current != nil {
 		return errors.NewBadRequestError("User already exists")
 	}
+	
+	user.CreatedAt = date.GetNowString()
 
 	userDB[user.Id] = user
 	return nil
