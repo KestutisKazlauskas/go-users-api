@@ -11,5 +11,10 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Mysql data folder
+
+#Environment var
+set_environment.bat
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
