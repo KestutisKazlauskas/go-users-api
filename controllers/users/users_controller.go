@@ -9,29 +9,36 @@ import (
 	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
 )
 
-func GetUser(controller *gin.Context) {
-	userId, userErr := strconv.ParseInt(controller.Param("user_id"), 10, 64)
-
+func getUserId(userIdParam string) (int64, *errors.RestErr) {
+	userId, userErr := strconv.ParseInt(userIdParam, 10, 64)
 	if userErr != nil {
-		err := errors.NewBadRequestError("invalid user_id")
-		controller.JSON(err.Status, err)
+		return 0, errors.NewBadRequestError("invalid user_id")
+	}
+
+	return userId, nil
+}
+
+func Get(context *gin.Context) {
+	userId, idErr := getUserId(context.Param("user_id"))
+	if idErr != nil {
+		context.JSON(idErr.Status, idErr)
 		return
 	}
 	user, getErr := services.GetUser(userId)
 	if getErr != nil {
-		controller.JSON(getErr.Status, getErr)
+		context.JSON(getErr.Status, getErr)
 		return 
 	}
 
-	controller.JSON(http.StatusOK, user)
+	context.JSON(http.StatusOK, user)
 }
 
-func CreateUser(controller *gin.Context) {
+func Create(context *gin.Context) {
 	var user users.User
-	if err := controller.ShouldBindJSON(&user); err != nil {
-		// ShouldbindJSON do the json validation with controller.Request.Body
+	if err := context.ShouldBindJSON(&user); err != nil {
+		// ShouldbindJSON do the json validation with context.Request.Body
 		/*	Do this code for us:
-			bytes, err := ioutil.ReadAll(controller.Request.Body)
+			bytes, err := ioutil.ReadAll(context.Request.Body)
 			if err != nil {
 				return
 			}
@@ -42,17 +49,59 @@ func CreateUser(controller *gin.Context) {
 			}
 		*/
 		restErr := errors.NewBadRequestError("invalid JSON body")
-		controller.JSON(restErr.Status, restErr)
+		context.JSON(restErr.Status, restErr)
 		return 
 	}
 	result, saveErr := services.CreateUser(user)
 	if saveErr != nil {
-		controller.JSON(saveErr.Status, saveErr)
+		context.JSON(saveErr.Status, saveErr)
 		return 
 	}
-	controller.JSON(http.StatusCreated, result)
+	context.JSON(http.StatusCreated, result)
 }
 
-func FindUser(controller *gin.Context) {
-	controller.String(http.StatusNotImplemented, "Need some work!")
+func Update(context *gin.Context) {
+	userId, idErr := getUserId(context.Param("user_id"))
+	if idErr != nil {
+		context.JSON(idErr.Status, idErr)
+		return
+	}
+
+	var user users.User
+	if err := context.ShouldBindJSON(&user); err != nil {
+		restErr := errors.NewBadRequestError("invalid JSON body")
+		context.JSON(restErr.Status, restErr)
+		return 
+	}
+
+	user.Id = userId
+	isPartial := context.Request.Method == http.MethodPatch
+
+	result, err := services.UpdateUser(isPartial, user)
+	if err != nil {
+		context.JSON(err.Status, err)
+		return
+	}
+
+	context.JSON(http.StatusOK, result)
+}
+
+func Delete(context *gin.Context) {
+	userId, idErr := getUserId(context.Param("user_id"))
+	if idErr != nil {
+		context.JSON(idErr.Status, idErr)
+		return
+	}
+
+	if err := services.DeleteUser(userId); err != nil {
+		context.JSON(err.Status, err)
+		return
+	}
+
+	context.JSON(http.StatusOK, map[string]string{"status": "deleted"})
+
+}
+
+func Find(context *gin.Context) {
+	context.String(http.StatusNotImplemented, "Need some work!")
 }
