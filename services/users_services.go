@@ -2,6 +2,8 @@ package services
 
 import (
 	"github.com/KestutisKazlauskas/go-users-api/domain/users"
+	"github.com/KestutisKazlauskas/go-users-api/utils/date_utils"
+	"github.com/KestutisKazlauskas/go-users-api/utils/crypto_utils"
 	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
 )
 
@@ -20,6 +22,16 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
+
+	//bussnes logic goes here
+	user.CreatedAt = date_utils.GetNowDBFormat()
+	user.Status = users.StatusActive
+
+	password, err := crypto_utils.GetBCryptHash(user.Password)
+	if err != nil {
+		return nil, err
+	}
+	user.Password = password
 
 	if err := user.Save(); err != nil {
 		return nil, err
@@ -66,4 +78,10 @@ func UpdateUser(isParial bool, user users.User) (*users.User, *errors.RestErr) {
 func DeleteUser(userId int64) *errors.RestErr {
 	user := &users.User{Id: userId}
 	return user.Delete()
+}
+
+func Find(status string) (users.Users, *errors.RestErr) {
+	dao := &users.User{}
+
+	return dao.FindByStatus(status)
 }

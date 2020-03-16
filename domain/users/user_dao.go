@@ -3,16 +3,16 @@ package users
 
 import (
 	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
-	"github.com/KestutisKazlauskas/go-users-api/utils/date_utils"
 	"github.com/KestutisKazlauskas/go-users-api/datasources/mysql/users_db"
 	"github.com/KestutisKazlauskas/go-users-api/utils/mysql_utils"
 )
 
 const (
-	queryInsertUser = "INSERT INTO users(first_name, last_name, email, created_at) VALUES (?, ?, ?, ?);"
-	queryGetUser = "SELECT id, first_name, last_name, email, created_at FROM users WHERE id=?;"
+	queryInsertUser = "INSERT INTO users(first_name, last_name, email, created_at, status, password) VALUES (?, ?, ?, ?, ?, ?);"
+	queryGetUser = "SELECT id, first_name, last_name, email, created_at, status FROM users WHERE id=?;"
 	queryUpdateUser = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
 	queryDeleteUser = "DELETE FROM users WHERE id=?;"
+	queryFindByStatus = "SELECT id, first_name, last_name, email, created_at, status FROM users WHERE status=?;"
 )
 
 func (user *User) Get() *errors.RestErr {
@@ -23,7 +23,7 @@ func (user *User) Get() *errors.RestErr {
 	defer statment.Close()
 
 	result := statment.QueryRow(user.Id)
-	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.CreatedAt); getErr != nil {
+	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.CreatedAt, &user.Status); getErr != nil {
 		return mysql_utils.ParseError(getErr)
 	}
 
@@ -40,8 +40,7 @@ func (user *User) Save() *errors.RestErr {
 	}
 	//important to close connection after code execution
 	defer statment.Close()
-	user.CreatedAt = date_utils.GetNowString()
-	insertResult, insertErr := statment.Exec(user.FirstName, user.LastName, user.Email, user.CreatedAt)
+	insertResult, insertErr := statment.Exec(user.FirstName, user.LastName, user.Email, user.CreatedAt, user.Status, user.Password)
 
 	if insertErr != nil {
 		return mysql_utils.ParseError(insertErr)
@@ -86,3 +85,32 @@ func (user *User) Delete() *errors.RestErr {
 	return nil
 }
 
+func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
+	statment, err := users_db.Clinet.Prepare(queryFindByStatus)
+	if err != nil {
+		return nil, errors.NewInternalServerError(err.Error())
+	}
+	defer statment.Close()
+
+	rows, err := statment.Query(status)
+	if err != nil {
+		return nil, mysql_utils.ParseError(err)
+	}
+	defer rows.Close()
+
+	results := make([]User, 0)
+	for rows.Next() {
+		var user User
+		if err := rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.CreatedAt, &user.Status); err != nil {
+			return nil, mysql_utils.ParseError(err)
+		}
+
+		results = append(results, user)
+	}
+
+	if len(results) ==  0 {
+		return nil, errors.NewNotFoundError("No users found.")
+	}
+
+	return results, nil
+}

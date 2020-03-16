@@ -25,5 +25,4 @@ func ParseError(err error) *errors.RestErr {
 	}
 
 	return errors.NewInternalServerError("error processing request.")
-
 }
