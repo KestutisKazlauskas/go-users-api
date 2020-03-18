@@ -18,7 +18,7 @@ const (
 func (user *User) Get() *errors.RestErr {
 	statment, err := users_db.Clinet.Prepare(queryGetUser)
 	if err != nil {
-		return errors.NewInternalServerError(err.Error())
+		return errors.NewInternalServerError("Error preparing mysql statment", err)
 	}
 	defer statment.Close()
 
@@ -36,7 +36,7 @@ func (user *User) Save() *errors.RestErr {
 
 	statment, err := users_db.Clinet.Prepare(queryInsertUser)
 	if err != nil {
-		return errors.NewInternalServerError(err.Error())
+		return errors.NewInternalServerError("Error preparing mysql statment", err)
 	}
 	//important to close connection after code execution
 	defer statment.Close()
@@ -58,7 +58,7 @@ func (user *User) Save() *errors.RestErr {
 func (user *User) Update() *errors.RestErr {
 	statment, err := users_db.Clinet.Prepare(queryUpdateUser)
 	if err != nil {
-		return errors.NewInternalServerError(err.Error())
+		return errors.NewInternalServerError("Error preparing stamtent", err)
 	}
 	defer statment.Close()
 
@@ -74,7 +74,7 @@ func (user *User) Update() *errors.RestErr {
 func (user *User) Delete() *errors.RestErr {
 	statment, err := users_db.Clinet.Prepare(queryDeleteUser)
 	if err != nil {
-		return errors.NewInternalServerError(err.Error())
+		return errors.NewInternalServerError("Error preparing mysql statment", err)
 	}
 	defer statment.Close()
 
@@ -88,7 +88,7 @@ func (user *User) Delete() *errors.RestErr {
 func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
 	statment, err := users_db.Clinet.Prepare(queryFindByStatus)
 	if err != nil {
-		return nil, errors.NewInternalServerError(err.Error())
+		return nil, errors.NewInternalServerError("Error preparing mysql statment", err)
 	}
 	defer statment.Close()
 

@@ -7,8 +7,24 @@ import (
 	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
 )
 
-func GetUser(userId int64) (*users.User, *errors.RestErr) {
+var (
+	UserService userServiceInterface = &userService{}
+)
 
+type userService struct {
+
+}
+
+type userServiceInterface interface {
+	Get(int64) (*users.User, *errors.RestErr)
+	Create(users.User) (*users.User, *errors.RestErr)
+	Update(bool, users.User) (*users.User, *errors.RestErr) 
+	Delete(int64) *errors.RestErr
+	Find(string) (users.Users, *errors.RestErr)
+}
+
+func (service *userService) Get(userId int64) (*users.User, *errors.RestErr) {
+	
 	result := &users.User{Id: userId}
 	if err := result.Get(); err != nil {
 		return nil, err
@@ -17,7 +33,7 @@ func GetUser(userId int64) (*users.User, *errors.RestErr) {
 	return result, nil
 }
 
-func CreateUser(user users.User) (*users.User, *errors.RestErr) {
+func (service *userService) Create(user users.User) (*users.User, *errors.RestErr) {
 
 	if err := user.Validate(); err != nil {
 		return nil, err
@@ -41,9 +57,9 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 
 }
 
-func UpdateUser(isParial bool, user users.User) (*users.User, *errors.RestErr) {
-	current, err := GetUser(user.Id)
-	if err != nil {
+func (service *userService) Update(isParial bool, user users.User) (*users.User, *errors.RestErr) {
+	current := &users.User{Id: user.Id}
+	if err := current.Get(); err != nil {
 		return nil, err
 	}
 
@@ -75,12 +91,12 @@ func UpdateUser(isParial bool, user users.User) (*users.User, *errors.RestErr) {
 	return current, nil
 }
 
-func DeleteUser(userId int64) *errors.RestErr {
+func (service *userService) Delete(userId int64) *errors.RestErr {
 	user := &users.User{Id: userId}
 	return user.Delete()
 }
 
-func Find(status string) (users.Users, *errors.RestErr) {
+func (service *userService) Find(status string) (users.Users, *errors.RestErr) {
 	dao := &users.User{}
 
 	return dao.FindByStatus(status)

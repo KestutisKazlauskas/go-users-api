@@ -1,6 +1,7 @@
 package errors
 import (
 	"net/http"
+	"github.com/KestutisKazlauskas/go-users-api/logger"
 )
 
 type RestErr struct {
@@ -29,9 +30,10 @@ func NewNotFoundError(message string) *RestErr {
 	return &error
 }
 
-func NewInternalServerError(message string) *RestErr {
+func NewInternalServerError(logMessage string, err error) *RestErr {
+	logger.Error(logMessage, err)
 	error := RestErr{
-		Message: message,
+		Message: "Something went wrong.",
 		Status: http.StatusInternalServerError,
 		Error: "internal_server_error",
 	}
