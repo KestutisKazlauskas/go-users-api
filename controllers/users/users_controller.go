@@ -114,3 +114,20 @@ func Find(context *gin.Context) {
 	context.JSON(http.StatusOK, users.Marshall(context.GetHeader("X-Public") == "true"))
 }
 
+func Login(context *gin.Context) {
+	var request users.LoginRequest
+	if err := context.ShouldBindJSON(&request); err != nil {
+		restErr := errors.NewBadRequestError("invalid json")
+		context.JSON(restErr.Status, restErr)
+		return
+	}
+
+	user, err := services.UserService.Login(request)
+	if err != nil {
+		context.JSON(err.Status, err)
+		return
+	}
+
+	context.JSON(http.StatusOK, user.Marshall(false))
+}
+

@@ -3,6 +3,7 @@ package users
 import (
 	"strings"
 	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
+	"github.com/KestutisKazlauskas/go-users-api/utils/crypto_utils"
 )
 
 const (
@@ -37,4 +38,14 @@ func (user *User) Validate() *errors.RestErr {
 	}
 
 	return nil
+}
+
+func (user *User) ValidatePassowrd(password string) *errors.RestErr {
+	isPasswordCorrect := crypto_utils.CheckBCryptPassword(user.Password, password)
+
+	if !isPasswordCorrect {
+		return errors.NewBadRequestError("Incorrect logins") 
+	}
+
+	return nil 
 }

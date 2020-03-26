@@ -13,6 +13,7 @@ const (
 	queryUpdateUser = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
 	queryDeleteUser = "DELETE FROM users WHERE id=?;"
 	queryFindByStatus = "SELECT id, first_name, last_name, email, created_at, status FROM users WHERE status=?;"
+	queryFindEmailAndPassword = "SELECT id, first_name, last_name, email, created_at, status, password FROM users WHERE email=?"
 )
 
 func (user *User) Get() *errors.RestErr {
@@ -26,8 +27,6 @@ func (user *User) Get() *errors.RestErr {
 	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.CreatedAt, &user.Status); getErr != nil {
 		return mysql_utils.ParseError(getErr)
 	}
-
-
 
 	return nil
 }
@@ -113,4 +112,19 @@ func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
 	}
 
 	return results, nil
+}
+
+func (user *User) FindByEmail() *errors.RestErr {
+	statment, err := users_db.Clinet.Prepare(queryFindEmailAndPassword)
+	if err != nil {
+		return errors.NewInternalServerError("Error preparing mysql statment", err)
+	}
+	defer statment.Close()
+
+	result := statment.QueryRow(user.Email)
+	if getErr := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.CreatedAt, &user.Status, &user.Password); getErr != nil {
+		return mysql_utils.ParseError(getErr)
+	}
+
+	return nil
 }
