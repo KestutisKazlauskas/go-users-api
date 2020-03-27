@@ -14,6 +14,6 @@ func StartApplication() {
 	MapUrls()
 
 	logger.Info("About to start application")
-	router.Run(":8080")
+	router.Run(":8081")
 	
 }
