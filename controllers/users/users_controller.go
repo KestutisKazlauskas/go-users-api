@@ -7,6 +7,7 @@ import (
 	"github.com/KestutisKazlauskas/go-users-api/domain/users"
 	"github.com/KestutisKazlauskas/go-users-api/services"
 	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
+	"github.com/KestutisKazlauskas/go-oauth/oauth"
 )
 
 func getUserId(userIdParam string) (int64, *errors.RestErr) {
@@ -19,6 +20,12 @@ func getUserId(userIdParam string) (int64, *errors.RestErr) {
 }
 
 func Get(context *gin.Context) {
+	//TODO fix authentication for Public Ip if not authenicatd it should be public
+	//TODO return error if bad authentication token is send.
+	if oauth.AuthenticateRequest(context.Request); err != nil {
+		context.JSON(err.Status, err)
+		return
+	}
 	userId, idErr := getUserId(context.Param("user_id"))
 	if idErr != nil {
 		context.JSON(idErr.Status, idErr)
@@ -30,7 +37,12 @@ func Get(context *gin.Context) {
 		return 
 	}
 
-	context.JSON(http.StatusOK, user.Marshall(context.GetHeader("X-Public") == "true"))
+	if oauth.GetUserId == user.Id {
+		context.JSON(http.StatusOK, user.Marshall(false))
+		return 
+	}
+
+	context.JSON(http.StatusOK, user.Marshall(oauth.IsPublic(context.Request)))
 }
 
 func Create(context *gin.Context) {
