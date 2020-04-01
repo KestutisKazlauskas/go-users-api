@@ -4,7 +4,7 @@ import (
 	"github.com/KestutisKazlauskas/go-users-api/domain/users"
 	"github.com/KestutisKazlauskas/go-users-api/utils/date_utils"
 	"github.com/KestutisKazlauskas/go-users-api/utils/crypto_utils"
-	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
+	"github.com/KestutisKazlauskas/go-utils/rest_errors"
 )
 
 var (
@@ -16,15 +16,15 @@ type userService struct {
 }
 
 type userServiceInterface interface {
-	Get(int64) (*users.User, *errors.RestErr)
-	Create(users.User) (*users.User, *errors.RestErr)
-	Update(bool, users.User) (*users.User, *errors.RestErr) 
-	Delete(int64) *errors.RestErr
-	Find(string) (users.Users, *errors.RestErr)
-	Login(users.LoginRequest) (*users.User, *errors.RestErr) 
+	Get(int64) (*users.User, *rest_errors.RestErr)
+	Create(users.User) (*users.User, *rest_errors.RestErr)
+	Update(bool, users.User) (*users.User, *rest_errors.RestErr) 
+	Delete(int64) *rest_errors.RestErr
+	Find(string) (users.Users, *rest_errors.RestErr)
+	Login(users.LoginRequest) (*users.User, *rest_errors.RestErr) 
 }
 
-func (service *userService) Get(userId int64) (*users.User, *errors.RestErr) {
+func (service *userService) Get(userId int64) (*users.User, *rest_errors.RestErr) {
 	
 	result := &users.User{Id: userId}
 	if err := result.Get(); err != nil {
@@ -34,7 +34,7 @@ func (service *userService) Get(userId int64) (*users.User, *errors.RestErr) {
 	return result, nil
 }
 
-func (service *userService) Create(user users.User) (*users.User, *errors.RestErr) {
+func (service *userService) Create(user users.User) (*users.User, *rest_errors.RestErr) {
 
 	if err := user.Validate(); err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (service *userService) Create(user users.User) (*users.User, *errors.RestEr
 
 }
 
-func (service *userService) Update(isParial bool, user users.User) (*users.User, *errors.RestErr) {
+func (service *userService) Update(isParial bool, user users.User) (*users.User, *rest_errors.RestErr) {
 	current := &users.User{Id: user.Id}
 	if err := current.Get(); err != nil {
 		return nil, err
@@ -92,18 +92,18 @@ func (service *userService) Update(isParial bool, user users.User) (*users.User,
 	return current, nil
 }
 
-func (service *userService) Delete(userId int64) *errors.RestErr {
+func (service *userService) Delete(userId int64) *rest_errors.RestErr {
 	user := &users.User{Id: userId}
 	return user.Delete()
 }
 
-func (service *userService) Find(status string) (users.Users, *errors.RestErr) {
+func (service *userService) Find(status string) (users.Users, *rest_errors.RestErr) {
 	dao := &users.User{}
 
 	return dao.FindByStatus(status)
 }
 
-func (service *userService) Login(request users.LoginRequest) (*users.User, *errors.RestErr) {
+func (service *userService) Login(request users.LoginRequest) (*users.User, *rest_errors.RestErr) {
 	user := &users.User{
 		Email: request.Email,
 	}

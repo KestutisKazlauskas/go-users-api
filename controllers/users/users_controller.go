@@ -6,14 +6,14 @@ import (
 	"strconv"
 	"github.com/KestutisKazlauskas/go-users-api/domain/users"
 	"github.com/KestutisKazlauskas/go-users-api/services"
-	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
+	"github.com/KestutisKazlauskas/go-utils/rest_errors"
 	"github.com/KestutisKazlauskas/go-oauth/oauth"
 )
 
-func getUserId(userIdParam string) (int64, *errors.RestErr) {
+func getUserId(userIdParam string) (int64, *rest_errors.RestErr) {
 	userId, userErr := strconv.ParseInt(userIdParam, 10, 64)
 	if userErr != nil {
-		return 0, errors.NewBadRequestError("invalid user_id")
+		return 0, rest_errors.NewBadRequestError("invalid user_id")
 	}
 
 	return userId, nil
@@ -22,7 +22,7 @@ func getUserId(userIdParam string) (int64, *errors.RestErr) {
 func Get(context *gin.Context) {
 	//TODO fix authentication for Public Ip if not authenicatd it should be public
 	//TODO return error if bad authentication token is send.
-	if oauth.AuthenticateRequest(context.Request); err != nil {
+	if err := oauth.Authenticate(context.Request); err != nil {
 		context.JSON(err.Status, err)
 		return
 	}
@@ -37,7 +37,7 @@ func Get(context *gin.Context) {
 		return 
 	}
 
-	if oauth.GetUserId == user.Id {
+	if oauth.GetUserId(context.Request) == user.Id {
 		context.JSON(http.StatusOK, user.Marshall(false))
 		return 
 	}
@@ -60,7 +60,7 @@ func Create(context *gin.Context) {
 				return
 			}
 		*/
-		restErr := errors.NewBadRequestError("invalid JSON body")
+		restErr := rest_errors.NewBadRequestError("invalid JSON body")
 		context.JSON(restErr.Status, restErr)
 		return 
 	}
@@ -81,7 +81,7 @@ func Update(context *gin.Context) {
 
 	var user users.User
 	if err := context.ShouldBindJSON(&user); err != nil {
-		restErr := errors.NewBadRequestError("invalid JSON body")
+		restErr := rest_errors.NewBadRequestError("invalid JSON body")
 		context.JSON(restErr.Status, restErr)
 		return 
 	}
@@ -129,7 +129,7 @@ func Find(context *gin.Context) {
 func Login(context *gin.Context) {
 	var request users.LoginRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
-		restErr := errors.NewBadRequestError("invalid json")
+		restErr := rest_errors.NewBadRequestError("invalid json")
 		context.JSON(restErr.Status, restErr)
 		return
 	}

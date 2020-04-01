@@ -2,7 +2,7 @@ package users
 
 import (
 	"strings"
-	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
+	"github.com/KestutisKazlauskas/go-utils/rest_errors"
 	"github.com/KestutisKazlauskas/go-users-api/utils/crypto_utils"
 )
 
@@ -22,29 +22,29 @@ type User struct {
 
 type Users []User
 
-func (user *User) Validate() *errors.RestErr {
+func (user *User) Validate() *rest_errors.RestErr {
 	user.FirstName = strings.TrimSpace(user.FirstName)
 	user.LastName = strings.TrimSpace(user.LastName)
 	user.Email = strings.TrimSpace(strings.ToLower(user.Email))
 
 	if user.Email == "" {
-		return errors.NewBadRequestError("invalid email address")
+		return rest_errors.NewBadRequestError("invalid email address")
 	}
 
 	user.Password = strings.TrimSpace(user.Password)
 
 	if user.Password == "" {
-		return errors.NewBadRequestError("invalid password address")
+		return rest_errors.NewBadRequestError("invalid password address")
 	}
 
 	return nil
 }
 
-func (user *User) ValidatePassowrd(password string) *errors.RestErr {
+func (user *User) ValidatePassowrd(password string) *rest_errors.RestErr {
 	isPasswordCorrect := crypto_utils.CheckBCryptPassword(user.Password, password)
 
 	if !isPasswordCorrect {
-		return errors.NewBadRequestError("Incorrect logins") 
+		return rest_errors.NewBadRequestError("Incorrect logins") 
 	}
 
 	return nil 

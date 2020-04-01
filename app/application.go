@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/KestutisKazlauskas/go-users-api/logger"
+	"github.com/KestutisKazlauskas/go-utils/logger"
 )
 
 var (
@@ -13,7 +13,6 @@ func StartApplication() {
 
 	MapUrls()
 
-	logger.Info("About to start application")
-	router.Run(":8081")
-	
+	logger.Log.Info("About to start application")
+	router.Run(":8081")	
 }

@@ -2,7 +2,8 @@ package users
 // access to database for user code of database only herer
 
 import (
-	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
+	"github.com/KestutisKazlauskas/go-utils/rest_errors"
+	"github.com/KestutisKazlauskas/go-utils/logger"
 	"github.com/KestutisKazlauskas/go-users-api/datasources/mysql/users_db"
 	"github.com/KestutisKazlauskas/go-users-api/utils/mysql_utils"
 )
@@ -16,10 +17,10 @@ const (
 	queryFindEmailAndPassword = "SELECT id, first_name, last_name, email, created_at, status, password FROM users WHERE email=?"
 )
 
-func (user *User) Get() *errors.RestErr {
+func (user *User) Get() *rest_errors.RestErr {
 	statment, err := users_db.Clinet.Prepare(queryGetUser)
 	if err != nil {
-		return errors.NewInternalServerError("Error preparing mysql statment", err)
+		return rest_errors.NewInternalServerError("Error preparing mysql statment", err, logger.Log)
 	}
 	defer statment.Close()
 
@@ -31,11 +32,11 @@ func (user *User) Get() *errors.RestErr {
 	return nil
 }
 
-func (user *User) Save() *errors.RestErr {
+func (user *User) Save() *rest_errors.RestErr {
 
 	statment, err := users_db.Clinet.Prepare(queryInsertUser)
 	if err != nil {
-		return errors.NewInternalServerError("Error preparing mysql statment", err)
+		return rest_errors.NewInternalServerError("Error preparing mysql statment", err, logger.Log)
 	}
 	//important to close connection after code execution
 	defer statment.Close()
@@ -54,10 +55,10 @@ func (user *User) Save() *errors.RestErr {
 	return nil
 }
 
-func (user *User) Update() *errors.RestErr {
+func (user *User) Update() *rest_errors.RestErr {
 	statment, err := users_db.Clinet.Prepare(queryUpdateUser)
 	if err != nil {
-		return errors.NewInternalServerError("Error preparing stamtent", err)
+		return rest_errors.NewInternalServerError("Error preparing stamtent", err, logger.Log)
 	}
 	defer statment.Close()
 
@@ -70,10 +71,10 @@ func (user *User) Update() *errors.RestErr {
 
 }
 
-func (user *User) Delete() *errors.RestErr {
+func (user *User) Delete() *rest_errors.RestErr {
 	statment, err := users_db.Clinet.Prepare(queryDeleteUser)
 	if err != nil {
-		return errors.NewInternalServerError("Error preparing mysql statment", err)
+		return rest_errors.NewInternalServerError("Error preparing mysql statment", err, logger.Log)
 	}
 	defer statment.Close()
 
@@ -84,10 +85,10 @@ func (user *User) Delete() *errors.RestErr {
 	return nil
 }
 
-func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
+func (user *User) FindByStatus(status string) ([]User, *rest_errors.RestErr) {
 	statment, err := users_db.Clinet.Prepare(queryFindByStatus)
 	if err != nil {
-		return nil, errors.NewInternalServerError("Error preparing mysql statment", err)
+		return nil, rest_errors.NewInternalServerError("Error preparing mysql statment", err, logger.Log)
 	}
 	defer statment.Close()
 
@@ -108,16 +109,16 @@ func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
 	}
 
 	if len(results) ==  0 {
-		return nil, errors.NewNotFoundError("No users found.")
+		return nil, rest_errors.NewNotFoundError("No users found.")
 	}
 
 	return results, nil
 }
 
-func (user *User) FindByEmail() *errors.RestErr {
+func (user *User) FindByEmail() *rest_errors.RestErr {
 	statment, err := users_db.Clinet.Prepare(queryFindEmailAndPassword)
 	if err != nil {
-		return errors.NewInternalServerError("Error preparing mysql statment", err)
+		return rest_errors.NewInternalServerError("Error preparing mysql statment", err, logger.Log)
 	}
 	defer statment.Close()
 

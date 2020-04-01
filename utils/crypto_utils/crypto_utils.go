@@ -1,16 +1,17 @@
 package crypto_utils
 
 import (
-	"github.com/KestutisKazlauskas/go-users-api/utils/errors"
+	"github.com/KestutisKazlauskas/go-utils/rest_errors"
+	"github.com/KestutisKazlauskas/go-utils/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GetBCryptHash(input string) (string, *errors.RestErr) {
+func GetBCryptHash(input string) (string, *rest_errors.RestErr) {
 	byteInput := []byte(input)
 
 	hash, err := bcrypt.GenerateFromPassword(byteInput, bcrypt.MinCost)
 	if err != nil {
-		return "", errors.NewInternalServerError("Error hashing password", err)
+		return "", rest_errors.NewInternalServerError("Error hashing password", err, logger.Log)
 	}
 
 	return string(hash), nil
